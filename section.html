@@ -143,7 +143,9 @@ function tilpasHøjde(){
      omkring 1500px. #root's højde afhænger kun af indholdet. */
   var cs  = getComputedStyle(document.body);
   var pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
-  var h   = Math.ceil(el.getBoundingClientRect().height + pad) + 4;
+  /* +12 er bevidst rundhåndet: et par pixels for lidt giver en tynd scrollbar
+     i panelet, mens et par for mange blot er usynligt hvidrum. */
+  var h   = Math.ceil(el.getBoundingClientRect().height + pad) + 12;
   try { t.sizeTo(Math.max(h, 120)); } catch(e) {}
 }
 function planlægHøjde(){
