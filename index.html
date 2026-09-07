@@ -23,7 +23,10 @@ TrelloPowerUp.initialize({
       icon: ICON_URL,
       content: {
         type: 'iframe',
-        url: t.signUrl('./section.html'),
+        /* ?v=<tidsstempel> tvinger browseren til at hente panelet forfra.
+           GitHub Pages sender "cache-control: max-age=600", så uden dette
+           ville en rettelse i section.html først slå igennem 10 min senere. */
+        url: t.signUrl('./section.html?v=' + Date.now()),
         height: 520   // starthøjde – panelet måler sig selv og justerer bagefter
       }
     };
