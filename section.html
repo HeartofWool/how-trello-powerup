@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heart of Wool – Projektoverblik</title>
+<script src="https://p.trellocdn.com/power-up.min.js"></script>
+<style>
+  /* ── Heart of Wool branding ─────────────────────────────── */
+  :root{
+    --pink:#c8496a; --brun:#8b5e3c; --bg:#fdf6f0;
+    --kort:#ffffff; --linje:#efe1d6; --tekst:#3a2e28; --svag:#8a7a70;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--tekst); font-size:13px; line-height:1.45;
+    padding:12px 14px 18px;
+  }
+  .hidden{display:none!important;}
+
+  /* Header */
+  .hdr{
+    display:flex; flex-wrap:wrap; align-items:flex-start; gap:10px;
+    border-bottom:2px solid var(--linje); padding-bottom:12px; margin-bottom:14px;
+  }
+  .hdr-tekst{flex:1 1 200px; min-width:180px;}
+  .hdr-titel{font-size:17px; font-weight:800; color:var(--pink); margin:0 0 2px;}
+  .hdr-designer{font-size:12px; color:var(--brun); font-weight:600;}
+  .hdr-designer span{color:var(--svag); font-weight:500;}
+  .deadline{
+    background:#fff; border:1.5px solid var(--linje); border-radius:12px;
+    padding:8px 14px; text-align:center; min-width:130px;
+  }
+  .deadline-lbl{font-size:9.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--svag); font-weight:700;}
+  .deadline-dato{font-size:15px; font-weight:800; color:var(--brun); margin:2px 0;}
+  .deadline-rest{font-size:11px; font-weight:700;}
+  .deadline-rest.snart{color:var(--pink);}
+  .deadline-rest.overskredet{color:#b23; }
+  .deadline-rest.god{color:#2e7d32;}
+
+  /* Sektioner */
+  .sektion{margin-bottom:16px;}
+  .sektion-titel{
+    font-size:11px; text-transform:uppercase; letter-spacing:.7px; font-weight:800;
+    color:var(--brun); margin:0 0 8px; display:flex; align-items:center; gap:6px;
+  }
+  .sektion-titel .antal{
+    background:var(--brun); color:#fff; border-radius:10px; font-size:10px;
+    padding:1px 7px; font-weight:700; letter-spacing:0;
+  }
+
+  /* Garn-kort */
+  .garn-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px;}
+  .garn{
+    background:var(--kort); border:1px solid var(--linje); border-radius:12px;
+    padding:10px 12px; border-left:4px solid var(--pink);
+  }
+  .garn-nr{font-size:10px; font-weight:800; color:var(--pink); text-transform:uppercase; letter-spacing:.5px;}
+  .garn-navn{font-size:13.5px; font-weight:700; margin:1px 0;}
+  .garn-prod{font-size:11.5px; color:var(--svag);}
+  .garn-maengde{font-size:11.5px; color:var(--brun); font-weight:600; margin-top:2px;}
+  .nuancer{display:flex; flex-direction:column; gap:3px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--linje);}
+  .nuance{display:flex; align-items:center; gap:6px; font-size:11.5px;}
+  .nuance .prik{width:12px; height:12px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex:0 0 auto;}
+  .nuance .kat{color:var(--svag); min-width:64px; font-size:10px; text-transform:uppercase; letter-spacing:.3px;}
+  .nuance .val{font-weight:600;}
+
+  /* Chip-lister (tilbehør / pind) */
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{
+    background:#fff; border:1px solid var(--linje); border-radius:20px;
+    padding:4px 12px; font-size:12px; font-weight:600; color:var(--brun);
+  }
+
+  /* Testere */
+  .testere{display:flex; flex-direction:column; gap:6px;}
+  .tester{
+    background:var(--kort); border:1px solid var(--linje); border-radius:10px;
+    padding:7px 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .tester-nr{
+    width:22px; height:22px; border-radius:50%; background:var(--pink); color:#fff;
+    font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .tester-navn{font-weight:700; font-size:12.5px;}
+  .tester-mail{font-size:11.5px;}
+  .tester-mail a{color:var(--pink); text-decoration:none;}
+  .tester-mail a:hover{text-decoration:underline;}
+
+  .tom{color:var(--svag); font-style:italic; font-size:12px;}
+  .fejl{color:#b23; font-size:12px; padding:10px 0;}
+</style>
+</head>
+<body>
+  <div id="root">
+    <div class="tom" id="loader">Henter projektdata…</div>
+  </div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Heart of Wool – Trello card-back-panel
+   Læser boardets custom fields (dem HoW-appen synkroniserer) og
+   viser dem samlet og overskueligt i stedet for den lange feltliste.
+   ───────────────────────────────────────────────────────────── */
+var t = TrelloPowerUp.iframe();
+
+/* Bedste-gæt på farve ud fra et nuance-navn. Rammer den ikke, vises
+   en neutral grå prik. Rent visuelt — ikke facit på garnfarven. */
+var FARVEORD = [
+  ['bordeaux','#7a2a3a'],['terracotta','#c06a4a'],['petrol','#2a6a7a'],
+  ['turkis','#3fae9f'],['marine','#2a3a6a'],['navy','#2a3a6a'],
+  ['oliven','#7a7a3a'],['olive','#7a7a3a'],['senneps','#c8a83a'],['mustard','#c8a83a'],
+  ['okker','#c8923a'],['ochre','#c8923a'],['koral','#e08a6a'],['coral','#e08a6a'],
+  ['fersken','#f0c0a0'],['peach','#f0c0a0'],['creme','#efe6d0'],['cream','#efe6d0'],
+  ['beige','#d8c6a8'],['sand','#d8c6a8'],['natur','#e8dcc8'],['lyng','#9a7a9a'],
+  ['mint','#a8d8c0'],['rosa','#d98cae'],['pink','#d98cae'],['rød','#d64545'],['rod','#d64545'],
+  ['red','#d64545'],['blå','#3a6ea5'],['bla','#3a6ea5'],['blue','#3a6ea5'],
+  ['grøn','#4a8a4a'],['gron','#4a8a4a'],['green','#4a8a4a'],['gul','#e0c04a'],['yellow','#e0c04a'],
+  ['lilla','#8a5aa8'],['purple','#8a5aa8'],['orange','#e0894a'],['brun','#8b5e3c'],['brown','#8b5e3c'],
+  ['grå','#9a9a9a'],['gra','#9a9a9a'],['gray','#9a9a9a'],['grey','#9a9a9a'],
+  ['sort','#333333'],['black','#333333'],['hvid','#f0f0f0'],['white','#f0f0f0']
+];
+function gætFarve(navn){
+  var s = String(navn||'').toLowerCase();
+  for(var i=0;i<FARVEORD.length;i++){ if(s.indexOf(FARVEORD[i][0])>=0) return FARVEORD[i][1]; }
+  return '#c9bcae';
+}
+
+/* Escape til sikker indsættelse i HTML */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+/* Dato → "2. feb 2026" */
+var MDR=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+function fmtDato(d){ return d.getDate()+'. '+MDR[d.getMonth()]+' '+d.getFullYear(); }
+
+/* Træk værdien ud af et customFieldItem givet feltets definition */
+function værdi(item, felt){
+  if(!item) return '';
+  if(felt.type==='list'){
+    var opt=(felt.options||[]).filter(function(o){ return (o.id||o._id)===item.idValue; })[0];
+    return opt ? (opt.value && (opt.value.text!=null?opt.value.text:opt.text)) : '';
+  }
+  var v=item.value||{};
+  if(v.text!=null) return v.text;
+  if(v.number!=null) return v.number;
+  if(v.date!=null) return v.date;
+  if(v.checked!=null) return v.checked==='true'||v.checked===true ? 'Ja':'';
+  return '';
+}
+
+Promise.all([
+  t.card('customFieldItems'),
+  t.board('customFields')
+]).then(function(res){
+  var kort=res[0]||{}, brd=res[1]||{};
+  var items=kort.customFieldItems||[];
+  var felter=brd.customFields||[];
+
+  // felt-id → feltdefinition
+  var defById={}; felter.forEach(function(f){ defById[f.id]=f; });
+  // normaliseret feltnavn → værdi (kun ikke-tomme)
+  var val={};
+  items.forEach(function(it){
+    var f=defById[it.idCustomField]; if(!f) return;
+    var v=værdi(it,f);
+    if(v!==''&&v!=null) val[f.name.toLowerCase().replace(/\s+/g,' ').trim()]=v;
+  });
+  function g(navn){ return val[navn.toLowerCase().replace(/\s+/g,' ').trim()]||''; }
+
+  render(g);
+}).catch(function(err){
+  document.getElementById('root').innerHTML=
+    '<div class="fejl">Kunne ikke hente custom fields. '+
+    'Er "Custom Fields"-Power-Up\'en aktiveret på boardet?<br><small>'+esc(err&&err.message)+'</small></div>';
+  t.sizeTo('#root');
+});
+
+function render(g){
+  var html='';
+
+  /* ── Header: projekt · designer · deadline ── */
+  var projekt=g('projekt'), designer=g('designer'), dl=g('boksen udsendes');
+  html+='<div class="hdr"><div class="hdr-tekst">';
+  html+='<h1 class="hdr-titel">'+esc(projekt||'Projekt')+'</h1>';
+  if(designer) html+='<div class="hdr-designer"><span>Designer:</span> '+esc(designer)+'</div>';
+  html+='</div>';
+  if(dl){
+    var d=new Date(dl), rest='', kl='god';
+    if(!isNaN(d)){
+      var i_dag=new Date(); i_dag.setHours(0,0,0,0);
+      var dd=new Date(d); dd.setHours(0,0,0,0);
+      var dage=Math.round((dd-i_dag)/86400000);
+      if(dage>0){ rest='om '+dage+' dag'+(dage===1?'':'e'); kl=dage<=14?'snart':'god'; }
+      else if(dage===0){ rest='i dag!'; kl='snart'; }
+      else { rest='for '+(-dage)+' dag'+(dage===-1?'':'e')+' siden'; kl='overskredet'; }
+      html+='<div class="deadline"><div class="deadline-lbl">📦 Boksen udsendes</div>'+
+            '<div class="deadline-dato">'+esc(fmtDato(d))+'</div>'+
+            '<div class="deadline-rest '+kl+'">'+esc(rest)+'</div></div>';
+    }
+  }
+  html+='</div>';
+
+  /* ── Garn (op til 8) ── */
+  var garnKort=[];
+  for(var n=1;n<=8;n++){
+    var prod=g('garn '+n+' producent'), navn=g('garn '+n+' navn'), mgd=g('garn '+n+' mængde');
+    var douce=g('garn '+n+' douce/støvede nuance');
+    var jord =g('garn '+n+' jord/natur nuance');
+    var farv =g('garn '+n+' farverig nuance')||g('garn '+n+' farverige nuance');
+    if(!(prod||navn||mgd||douce||jord||farv)) continue;
+    var k='<div class="garn"><div class="garn-nr">Garn '+n+'</div>';
+    if(navn) k+='<div class="garn-navn">'+esc(navn)+'</div>';
+    if(prod) k+='<div class="garn-prod">'+esc(prod)+'</div>';
+    if(mgd)  k+='<div class="garn-maengde">'+esc(mgd)+'</div>';
+    var nu='';
+    function nuLinje(kat,v){ if(!v) return '';
+      return '<div class="nuance"><span class="prik" style="background:'+gætFarve(v)+'"></span>'+
+             '<span class="kat">'+kat+'</span><span class="val">'+esc(v)+'</span></div>'; }
+    nu+=nuLinje('Douce/støvet',douce)+nuLinje('Jord/natur',jord)+nuLinje('Farverig',farv);
+    if(nu) k+='<div class="nuancer">'+nu+'</div>';
+    k+='</div>';
+    garnKort.push(k);
+  }
+  if(garnKort.length){
+    html+='<div class="sektion"><div class="sektion-titel">🧶 Garn <span class="antal">'+garnKort.length+'</span></div>'+
+          '<div class="garn-grid">'+garnKort.join('')+'</div></div>';
+  }
+
+  /* ── Tilbehør ── */
+  var tilb=[]; for(var i=1;i<=8;i++){ var x=g('tilbehør '+i); if(x) tilb.push(x); }
+  if(tilb.length){
+    html+='<div class="sektion"><div class="sektion-titel">🎀 Tilbehør <span class="antal">'+tilb.length+'</span></div><div class="chips">';
+    tilb.forEach(function(x){ html+='<span class="chip">'+esc(x)+'</span>'; });
+    html+='</div></div>';
+  }
+
+  /* ── Pind/nål (udfyldes af designer selv) ── */
+  var pinde=[]; for(var p=1;p<=6;p++){ var pp=g('pind/nål '+p); if(pp) pinde.push(pp); }
+  if(pinde.length){
+    html+='<div class="sektion"><div class="sektion-titel">🥢 Pind / nål</div><div class="chips">';
+    pinde.forEach(function(x){ html+='<span class="chip">'+esc(x)+'</span>'; });
+    html+='</div></div>';
+  }
+
+  /* ── Testere ── */
+  var testere=[];
+  for(var tn=1;tn<=8;tn++){ var nv=g('tester '+tn), ml=g('tester '+tn+' e-mail'); if(nv||ml) testere.push({nr:tn,navn:nv,mail:ml}); }
+  if(testere.length){
+    html+='<div class="sektion"><div class="sektion-titel">👥 Testere <span class="antal">'+testere.length+'</span></div><div class="testere">';
+    testere.forEach(function(ts){
+      html+='<div class="tester"><div class="tester-nr">'+ts.nr+'</div>'+
+            '<div class="tester-navn">'+esc(ts.navn||'—')+'</div>';
+      if(ts.mail) html+='<div class="tester-mail"><a href="mailto:'+esc(ts.mail)+'">'+esc(ts.mail)+'</a></div>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+  }
+
+  if(html.indexOf('sektion')<0 && !projekt && !designer && !dl){
+    html+='<div class="tom">Ingen synkroniserede data endnu. Tryk “🔷 Synkroniser til Trello” i Heart of Wool-appen.</div>';
+  }
+
+  document.getElementById('root').innerHTML=html;
+  t.sizeTo('#root');
+}
+</script>
+</body>
+</html>

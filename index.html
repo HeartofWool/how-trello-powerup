@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>Heart of Wool Power-Up connector</title>
+<script src="https://p.trellocdn.com/power-up.min.js"></script>
+</head>
+<body>
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Heart of Wool – Trello Power-Up connector
+   Registrerer ét card-back-panel ("📦 Projektoverblik") der viser
+   de synkroniserede custom fields samlet og overskueligt.
+   ───────────────────────────────────────────────────────────── */
+
+// Vores eget ikon i samme mappe (absolut URL, som Trello kræver).
+var ICON_URL = window.location.href.replace(/index\.html.*$/,'') + 'icon.svg';
+
+TrelloPowerUp.initialize({
+  'card-back-section': function (t, options) {
+    return {
+      title: 'Projektoverblik',
+      icon: ICON_URL,
+      content: {
+        type: 'iframe',
+        url: t.signUrl('./section.html'),
+        height: 220   // starthøjde – panelet justerer selv via t.sizeTo()
+      }
+    };
+  }
+});
+</script>
+</body>
+</html>
