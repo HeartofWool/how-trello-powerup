@@ -134,9 +134,13 @@ function gætFarve(navn){
    (den måles før layout er faldet på plads), så vi sender et konkret pixeltal
    og gentager målingen et par gange mens fonte/billeder loader. */
 function tilpasHøjde(){
-  var el = document.getElementById('root');
-  if (!el) return;
-  var h = Math.ceil(el.getBoundingClientRect().height) + 28; // + luft nederst
+  /* scrollHeight på <html>/<body> tæller body'ens padding med — måler man i
+     stedet #root alene, mangler man de sidste par pixels og Trello viser en
+     tynd scrollbar i panelet. */
+  var h = Math.ceil(Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight
+  )) + 6; // lille buffer mod afrunding
   try { t.sizeTo(Math.max(h, 120)); } catch(e) {}
 }
 function planlægHøjde(){
