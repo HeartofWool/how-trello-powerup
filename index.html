@@ -23,10 +23,12 @@ TrelloPowerUp.initialize({
       icon: ICON_URL,
       content: {
         type: 'iframe',
-        /* ?v=<tidsstempel> tvinger browseren til at hente panelet forfra.
-           GitHub Pages sender "cache-control: max-age=600", så uden dette
-           ville en rettelse i section.html først slå igennem 10 min senere. */
-        url: t.signUrl('./section.html?v=' + Date.now()),
+        /* MÅ IKKE have query-string. Forsøg med "?v="+Date.now() som
+           cache-buster fik Trello til helt at holde op med at vise panelet —
+           t.signUrl() kan ikke håndtere en URL der allerede har en query.
+           GitHub Pages cacher i 10 min; vent i stedet, eller brug et privat
+           vindue når du vil se en rettelse med det samme. */
+        url: t.signUrl('./section.html'),
         height: 520   // starthøjde – panelet måler sig selv og justerer bagefter
       }
     };
