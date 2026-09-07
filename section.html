@@ -128,6 +128,23 @@ function gætFarve(navn){
   return '#c9bcae';
 }
 
+/* Fortæl Trello hvor højt panelet skal være.
+   Trello's card-back-section starter med højden fra index.html og ændrer sig
+   KUN hvis vi selv beder om det. En CSS-selector alene er upålidelig her
+   (den måles før layout er faldet på plads), så vi sender et konkret pixeltal
+   og gentager målingen et par gange mens fonte/billeder loader. */
+function tilpasHøjde(){
+  var el = document.getElementById('root');
+  if (!el) return;
+  var h = Math.ceil(el.getBoundingClientRect().height) + 28; // + luft nederst
+  try { t.sizeTo(Math.max(h, 120)); } catch(e) {}
+}
+function planlægHøjde(){
+  requestAnimationFrame(tilpasHøjde);
+  [80, 250, 600].forEach(function(ms){ setTimeout(tilpasHøjde, ms); });
+}
+window.addEventListener('resize', tilpasHøjde);
+
 /* Escape til sikker indsættelse i HTML */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -175,7 +192,7 @@ Promise.all([
   document.getElementById('root').innerHTML=
     '<div class="fejl">Kunne ikke hente custom fields. '+
     'Er "Custom Fields"-Power-Up\'en aktiveret på boardet?<br><small>'+esc(err&&err.message)+'</small></div>';
-  t.sizeTo('#root');
+  planlægHøjde();
 });
 
 function render(g){
@@ -264,7 +281,7 @@ function render(g){
   }
 
   document.getElementById('root').innerHTML=html;
-  t.sizeTo('#root');
+  planlægHøjde();
 }
 </script>
 </body>
