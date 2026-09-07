@@ -20,6 +20,11 @@
   }
   .hidden{display:none!important;}
 
+  /* flow-root indeslutter børnenes margins i #root's egen højde.
+     Uden den kollapser sidste sektions margin-bottom UD gennem #root, så
+     getBoundingClientRect() melder for lav højde og panelet får en scrollbar. */
+  #root{display:flow-root;}
+
   /* Header */
   .hdr{
     display:flex; flex-wrap:wrap; align-items:flex-start; gap:10px;
